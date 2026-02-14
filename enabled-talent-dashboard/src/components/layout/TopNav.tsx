@@ -35,7 +35,7 @@ export default function TopNav() {
             <Bell size={18} />
           </button>
 
-          <input
+          <input    
             placeholder="Search candidates by name, email..."
             className="ml-4 w-72 rounded-full bg-gray-100 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
           />

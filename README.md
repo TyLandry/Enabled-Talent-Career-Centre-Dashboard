@@ -21,6 +21,7 @@ Install the following:
 
 - **Node.js (LTS recommended)**  
   Verify:
+
   ```bash
   node -v
   npm -v
@@ -28,6 +29,7 @@ Install the following:
   After that, use cd enabled-talent-dashboard to install the following:
     npm install - For node modules
     npm i -D tailwindcss autoprefixer - installing tailwindcss
+  ```
 
 To Verify installation of tailwind, run this:
 npm ls tailwindcss

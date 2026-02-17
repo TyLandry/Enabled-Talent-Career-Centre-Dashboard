@@ -5,7 +5,7 @@ Built with **React (w/typescirpt) + Vite + Tailwind CSS (v4)**. This implementat
 
 ---
 
-## Tech Stack
+# Tech Stack
 
 - **React + typescirpt** (UI)
 - **Vite** (dev server + build)
@@ -15,7 +15,7 @@ Built with **React (w/typescirpt) + Vite + Tailwind CSS (v4)**. This implementat
 
 ---
 
-## Prerequisites
+# Prerequisites
 
 Install the following:
 

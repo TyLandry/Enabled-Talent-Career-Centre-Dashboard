@@ -1,3 +1,7 @@
+//Component for the top navigation
+
+
+//This will be used in the Layout component to display
 import { Bell, LogOut, User } from "lucide-react";
 
 export default function TopNav() {

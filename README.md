@@ -31,5 +31,5 @@ Install the following:
     npm i -D tailwindcss autoprefixer - installing tailwindcss
   ```
 
-To Verify installation of tailwind, run this:
-npm ls tailwindcss
+To verify the installation of Tailwind, run this:
+- npm ls tailwindcss

@@ -30,13 +30,17 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-        Skill Gap Analysis
-      </div>
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div className="lg:col-span-2 rounded-xl bg-white p-6 shadow-sm">
+    Skill Gap Analysis
+  </div>
+</div>
 
-      <div className="mt-6 rounded-xl bg-white p-6 shadow-sm">
-        Recent Opportunities
-      </div>
+<div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
+  <div className="lg:col-span-2 rounded-xl bg-white p-6 shadow-sm">
+    Recent Opportunities
+  </div>
+</div>
     </>
   );
 }

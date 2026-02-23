@@ -58,3 +58,29 @@ export default {
   demographics,
   attentionNeeded,
 };
+
+// Data for charts
+export const placementsOverTime = [
+  { month: 'Jan', placements: 145 },
+  { month: 'Feb', placements: 152 },
+  { month: 'Mar', placements: 68 },
+  { month: 'Apr', placements: 170 },
+  { month: 'May', placements: 87 },
+  { month: 'Jun', placements: 402 },
+];
+
+export type SkillGap = {
+  skill: string;
+  students: number;
+  jobs: number;
+  gap: number;
+  demand: 'Rising' | 'Stable' | 'Declining';
+};
+
+export const skillGapData: SkillGap[] = [
+  { skill: 'Software Development', students: 234, jobs: 198, gap: 36, demand: 'Rising' },
+  { skill: 'Data Analysis', students: 189, jobs: 245, gap: -56, demand: 'Rising' },
+  { skill: 'UX/UI Design', students: 156, jobs: 150, gap: 6, demand: 'Stable' },
+  { skill: 'Project Management', students: 142, jobs: 180, gap: -38, demand: 'Rising' },
+  { skill: 'Digital Marketing', students: 98, jobs: 85, gap: 13, demand: 'Declining' },
+];

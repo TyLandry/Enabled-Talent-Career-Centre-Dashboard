@@ -50,7 +50,7 @@ export default function TopNav() {
       {/* Secondary Nav */}
       <nav className="flex justify-between bg-gray-100 px-10">
         <nav className="flex order-first gap-8 px-10 py-2 text-sm text-gray-600">
-        <a className="border-b-2 border-orange-500 pb-2 font-medium text-gray-900 hover:text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70" href="#">
+        <a className="border-b-2 border-orange-600 pb-2 font-medium text-gray-900 hover:text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70" href="#">
           Dashboard
         </a>
         <a className="hover:text-orange-600 hover:opacity-70 transition-opacity duration-300 ease-in-out" href="#">

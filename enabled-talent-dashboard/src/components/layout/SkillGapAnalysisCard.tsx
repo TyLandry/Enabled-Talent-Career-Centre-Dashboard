@@ -85,7 +85,7 @@ export function SkillGapAnalysisCard({ deficitCount }: { deficitCount: number })
       </div>
 
       <div className="mt-4 flex justify-end">
-        <button type="button" className="text-xs font-medium text-orange-600 hover:text-orange-700">
+        <button type="button" className="text-xs font-medium text-orange-600 hover:text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70">
           Expand ↓
         </button>
       </div>

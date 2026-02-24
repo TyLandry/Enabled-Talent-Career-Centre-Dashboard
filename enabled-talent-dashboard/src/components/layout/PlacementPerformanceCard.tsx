@@ -70,7 +70,7 @@ export function PlacementPerformanceCard({
           <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
             {/* Placed */}
             <div className="relative pl-4">
-              <span className="absolute left-0 top-0 h-full w-0.5 rounded bg-orange-500" />
+              <span className="absolute left-0 top-0 h-full w-0.5 rounded bg-orange-600" />
               <div className="text-xs text-gray-500">Placed</div>
               <div className="mt-1 flex items-baseline gap-2">
                 <div className="text-lg font-semibold text-gray-900">{placed}</div>
@@ -127,7 +127,7 @@ export function PlacementPerformanceCard({
 
         <div className="mt-3">
           <div className="h-2.5 w-full rounded-full bg-gray-100">
-            <div className="h-2.5 rounded-full bg-orange-500" style={{ width: `${progressPct}%` }} />
+            <div className="h-2.5 rounded-full bg-orange-600" style={{ width: `${progressPct}%` }} />
           </div>
 
           <div className="mt-4 flex items-center justify-between text-xs text-gray-500">

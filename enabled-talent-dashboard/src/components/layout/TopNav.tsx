@@ -38,11 +38,6 @@ export default function TopNav() {
             <Bell size={18} />
           </button>
 
-          <input    
-            placeholder="Search candidates by name, email..."
-            className="ml-4 w-72 rounded-full bg-gray-100 px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-orange-400"
-          />
-
           <button
             type="button"
             className="rounded-full border border-orange-600 bg-orange-600 px-6 py-2 font-medium text-white transition-colors duration-300 hover:border-slate-900 hover:text-slate-900 hover:bg-white"
@@ -53,7 +48,8 @@ export default function TopNav() {
       </div>
 
       {/* Secondary Nav */}
-      <nav className="flex gap-8 px-10 py-2 text-sm text-gray-600 bg-gray-100">
+      <nav className="flex justify-between bg-gray-100 px-10">
+        <nav className="flex order-first gap-8 px-10 py-2 text-sm text-gray-600">
         <a className="border-b-2 border-orange-500 pb-2 font-medium text-gray-900 hover:text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70" href="#">
           Dashboard
         </a>
@@ -65,6 +61,14 @@ export default function TopNav() {
         </a>
         <a className="hover:text-orange-600 hover:opacity-70 transition-opacity duration-300 ease-in-out" href="#">
           Company Profile
+        </a>
+        </nav>
+
+        <a>
+          <input
+            placeholder="Search candidates by name, email..."
+            className="order-last ml-2 w-72 rounded-full bg-gray-100 px-4 py-2 text-sm outline-none border-2 border-gray-200 focus:border-orange-400 transition-colors duration-300"
+          />
         </a>
       </nav>
     </div>

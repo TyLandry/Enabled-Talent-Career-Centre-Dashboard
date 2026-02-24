@@ -15,9 +15,10 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <KpiRow />
 
-      {/* Row 2 */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8">
+        {/* Left Column */}
+        <div className="lg:col-span-8 space-y-6">
           <PlacementPerformanceCard
             placementRate={m.placementRate}
             placed={m.placed}
@@ -28,25 +29,17 @@ export default function DashboardPage() {
             progressPct={m.progressPct}
             milestones={m.milestones}
           />
+          <SkillGapAnalysisCard deficitCount={m.deficitCount} />
         </div>
 
-        <div className="lg:col-span-4">
+        {/* Right Column */}
+        <div className="lg:col-span-4 space-y-6">
           <MatchedApplicantsCard
             matchedCount={m.matchedCount}
             activeJobs={m.activeJobs}
             avgPerJob={m.avgPerJob}
             matchedPlacedCount={m.matchedPlacedCount}
           />
-        </div>
-      </div>
-
-      {/* Row 3 */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8">
-          <SkillGapAnalysisCard deficitCount={m.deficitCount} />
-        </div>
-
-        <div className="lg:col-span-4 space-y-6">
           <StudentDemographicsCard pctMale={m.pctMale} pctFemale={m.pctFemale} pctOther={m.pctOther} />
           <AttentionNeededCard />
           <RecentPlacementsCard recentPlacements={m.recentPlacements} />

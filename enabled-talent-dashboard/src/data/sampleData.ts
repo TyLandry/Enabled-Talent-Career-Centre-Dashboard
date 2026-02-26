@@ -18,6 +18,7 @@ export type Opportunity = {
   title: string;
   company: string;
   location?: string;
+  postedDaysAgo?: number;
 };
 
 export const kpis: KPI[] = [
@@ -35,9 +36,9 @@ export const matchedApplicants: Applicant[] = [
 ];
 
 export const opportunities: Opportunity[] = [
-  { id: 'o1', title: 'Frontend Engineer', company: 'Acme Co', location: 'Remote' },
-  { id: 'o2', title: 'Junior Data Analyst', company: 'DataWorks', location: 'Toronto' },
-  { id: 'o3', title: 'QA Tester', company: 'BuildIt', location: 'Bangalore' },
+  { id: 'o1', title: 'Senior HR Manager', company: 'TechCorp Inc.', location: 'Remote', postedDaysAgo: 2 },
+  { id: 'o2', title: 'Data Analyst Intern', company: 'DataFlow Systems', location: 'Toronto', postedDaysAgo: 3 },
+  { id: 'o3', title: 'UX Designer Co-op', company: 'Creative Labs', location: 'Vancouver', postedDaysAgo: 5 },
 ];
 
 export const demographics = {
@@ -83,4 +84,9 @@ export const skillGapData: SkillGap[] = [
   { skill: 'UX/UI Design', students: 156, jobs: 150, gap: 6, demand: 'Stable' },
   { skill: 'Project Management', students: 142, jobs: 180, gap: -38, demand: 'Rising' },
   { skill: 'Digital Marketing', students: 98, jobs: 85, gap: 13, demand: 'Declining' },
+  { skill: 'Cybersecurity', students: 76, jobs: 145, gap: -69, demand: 'Rising' },
+  { skill: 'Cloud Computing', students: 112, jobs: 168, gap: -56, demand: 'Rising' },
+  { skill: 'Machine Learning', students: 89, jobs: 132, gap: -43, demand: 'Rising' },
+  { skill: 'Business Analysis', students: 134, jobs: 110, gap: 24, demand: 'Stable' },
+  { skill: 'Mobile Development', students: 95, jobs: 88, gap: 7, demand: 'Stable' },
 ];

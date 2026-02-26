@@ -38,7 +38,6 @@ export function useDashboardMetrics() {
     const prev = placementsOverTime.at(-2)?.placements ?? 0;
     const yoyChange = prev > 0 ? Math.round(((last - prev) / prev) * 100) : 0;
 
-    const progressPct = Math.min(100, Math.round((placed / goal) * 100));
     const milestones = [0.25, 0.5, 0.75, 1].map((x) => Math.round(goal * x));
 
     const deficitCount = skillGapData.filter((s) => s.gap < 0).length;
@@ -63,7 +62,6 @@ export function useDashboardMetrics() {
       matchedPlacedCount,
       conversion,
       yoyChange,
-      progressPct,
       milestones,
       deficitCount,
       avgPerJob,

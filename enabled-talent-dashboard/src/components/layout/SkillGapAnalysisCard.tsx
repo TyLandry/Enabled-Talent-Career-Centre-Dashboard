@@ -1,5 +1,6 @@
 import { skillGapData, type SkillGap } from '../../data/sampleData';
-import { ArrowUpRight, AlertTriangle, CheckCircle2, MinusCircle } from 'lucide-react';
+import { ArrowUpRight, AlertTriangle, CheckCircle2, MinusCircle, ChevronUp, ChevronDown } from 'lucide-react';
+import { useState, useMemo } from 'react';
 
 function classNames(...xs: Array<string | false | null | undefined>) {
   return xs.filter(Boolean).join(' ');
@@ -40,7 +41,51 @@ function DemandCell({ demand }: { demand: SkillGap['demand'] }) {
   );
 }
 
+type SortColumn = 'skill' | 'students' | 'jobs' | 'gap' | 'demand';
+type SortDirection = 'asc' | 'desc';
+
 export function SkillGapAnalysisCard({ deficitCount }: { deficitCount: number }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [sortColumn, setSortColumn] = useState<SortColumn>('gap');
+  const [sortDirection, setSortDirection] = useState<SortDirection>('asc');
+  const initialDisplayCount = 5;
+
+  const handleSort = (column: SortColumn) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const sortedSkills = useMemo(() => {
+    const sorted = [...skillGapData].sort((a, b) => {
+      let aVal: number | string;
+      let bVal: number | string;
+
+      if (sortColumn === 'skill') {
+        aVal = a.skill.toLowerCase();
+        bVal = b.skill.toLowerCase();
+      } else if (sortColumn === 'demand') {
+        const demandOrder = { Rising: 3, Stable: 2, Declining: 1 };
+        aVal = demandOrder[a.demand];
+        bVal = demandOrder[b.demand];
+      } else {
+        aVal = a[sortColumn];
+        bVal = b[sortColumn];
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }, [sortColumn, sortDirection]);
+
+  const displayedSkills = isExpanded ? sortedSkills : sortedSkills.slice(0, initialDisplayCount);
+  const hasMore = skillGapData.length > initialDisplayCount;
+
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
       <div className="flex items-start justify-between gap-4">
@@ -59,15 +104,65 @@ export function SkillGapAnalysisCard({ deficitCount }: { deficitCount: number })
         <table className="w-full text-sm">
           <thead className="bg-gray-50">
             <tr className="text-left text-xs font-medium text-gray-500">
-              <th className="px-4 py-3">Skill</th>
-              <th className="px-4 py-3">Students</th>
-              <th className="px-4 py-3">Jobs</th>
-              <th className="px-4 py-3">Gap</th>
-              <th className="px-4 py-3">Demand</th>
+              <th className="px-4 py-3">
+                <button
+                  onClick={() => handleSort('skill')}
+                  className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                >
+                  Skill
+                  {sortColumn === 'skill' && (
+                    sortDirection === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </th>
+              <th className="px-4 py-3">
+                <button
+                  onClick={() => handleSort('students')}
+                  className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                >
+                  Students
+                  {sortColumn === 'students' && (
+                    sortDirection === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </th>
+              <th className="px-4 py-3">
+                <button
+                  onClick={() => handleSort('jobs')}
+                  className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                >
+                  Jobs
+                  {sortColumn === 'jobs' && (
+                    sortDirection === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </th>
+              <th className="px-4 py-3">
+                <button
+                  onClick={() => handleSort('gap')}
+                  className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                >
+                  Gap
+                  {sortColumn === 'gap' && (
+                    sortDirection === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </th>
+              <th className="px-4 py-3">
+                <button
+                  onClick={() => handleSort('demand')}
+                  className="flex items-center gap-1 hover:text-gray-700 transition-colors"
+                >
+                  Demand
+                  {sortColumn === 'demand' && (
+                    sortDirection === 'asc' ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />
+                  )}
+                </button>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100 bg-white">
-            {skillGapData.map((s: SkillGap) => (
+            {displayedSkills.map((s: SkillGap) => (
               <tr key={s.skill} className="text-gray-800">
                 <td className="px-4 py-4 font-medium text-gray-900">{s.skill}</td>
                 <td className="px-4 py-4 text-gray-700">{s.students}</td>
@@ -84,11 +179,17 @@ export function SkillGapAnalysisCard({ deficitCount }: { deficitCount: number })
         </table>
       </div>
 
-      <div className="mt-4 flex justify-end">
-        <button type="button" className="text-xs font-medium text-orange-600 hover:text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70">
-          Expand ↓
-        </button>
-      </div>
+      {hasMore && (
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs font-medium text-orange-600 transition-opacity duration-300 ease-in-out hover:opacity-70"
+          >
+            {isExpanded ? 'Collapse ↑' : 'Expand ↓'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

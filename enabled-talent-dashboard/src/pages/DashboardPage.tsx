@@ -26,7 +26,6 @@ export default function DashboardPage() {
             avgTimeDays={m.avgTimeDays}
             conversion={m.conversion}
             yoyChange={m.yoyChange}
-            progressPct={m.progressPct}
             milestones={m.milestones}
           />
           <SkillGapAnalysisCard deficitCount={m.deficitCount} />
@@ -46,7 +45,11 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <RecentOpportunitiesCard />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-8">
+          <RecentOpportunitiesCard />
+        </div>
+      </div>
     </div>
   );
 }

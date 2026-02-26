@@ -26,7 +26,6 @@ export default function DashboardPage() {
             avgTimeDays={m.avgTimeDays}
             conversion={m.conversion}
             yoyChange={m.yoyChange}
-            milestones={m.milestones}
           />
           <SkillGapAnalysisCard deficitCount={m.deficitCount} />
         </div>

@@ -13,7 +13,6 @@ type Props = {
   avgTimeDays: number;
   conversion: number;
   yoyChange: number;
-  milestones: number[];
 };
 
 // Mock data generator for different years and time ranges
@@ -47,7 +46,6 @@ export function PlacementPerformanceCard({
   avgTimeDays: _avgTimeDays,
   conversion: _conversion,
   yoyChange: _yoyChange,
-  milestones,
 }: Props) {
   const [selectedYear, setSelectedYear] = useState(2025);
   const [showComparison, setShowComparison] = useState(true);
@@ -107,6 +105,11 @@ export function PlacementPerformanceCard({
 
   // Calculate progress percentage based on current data
   const currentProgressPct = Math.min(100, (displayData.placed / displayData.goal) * 100);
+
+  // Calculate dynamic milestones based on current goal
+  const dynamicMilestones = useMemo(() => {
+    return [0.25, 0.5, 0.75, 1].map((x) => Math.round(displayData.goal * x));
+  }, [displayData.goal]);
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-black/5">
@@ -322,7 +325,7 @@ export function PlacementPerformanceCard({
           </div>
 
           <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-            {milestones.map((m) => {
+            {dynamicMilestones.map((m) => {
               const done = displayData.placed >= m;
               return (
                 <div key={m} className="flex flex-col items-center gap-1">

@@ -69,6 +69,7 @@ Use cd Backend to install the following:
   npm i express cors dotenv - install runtime dependencies
   npm i -D typescript ts-node-dev @types/node @types/express - install dev dependencies
   npx tsc --init - initialize TypeScript configuration
+  npm i express pg dotenv cors - install additional dependency
    ```
 
 To run the backend in development mode, run this:

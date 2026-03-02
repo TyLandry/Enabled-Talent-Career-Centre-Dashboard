@@ -5,6 +5,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { pool } from './db/pool';
 import skillsRouter from './routes/skills';
+import dashboardRouter from "./routes/dashboard";
 
 dotenv.config();
 
@@ -14,6 +15,9 @@ app.use(express.json());
 
 //Mount the skills router at /api/skills
 app.use('/api/skills', skillsRouter);
+
+// Mount the dashboard router at /api/dashboard
+app.use('/api/dashboard', dashboardRouter);
 
 //Simple health check to make sure server is running and can connect to the database
 app.get("/api/health", async (req, res) => {

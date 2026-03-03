@@ -5,21 +5,21 @@ const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    // 1️⃣ Active Students
+    // Active Students
     const studentsResult = await pool.query(
       `SELECT COUNT(*)::int AS count
        FROM "Students"
        WHERE "StudentStatus" = 'Active'`
     );
 
-    // 2️⃣ Open Opportunities (Jobs abertas)
+    // Open Opportunities
     const jobsResult = await pool.query(
       `SELECT COUNT(*)::int AS count
        FROM "Jobs"
        WHERE "JobStatus" = 'Open'`
     );
 
-    // 3️⃣ Placements This Month
+    // Placements This Month
     const placementsResult = await pool.query(
       `SELECT COUNT(*)::int AS count
        FROM "Placements"

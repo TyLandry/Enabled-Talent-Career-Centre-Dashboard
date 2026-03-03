@@ -5,13 +5,34 @@ const router = Router();
 
 router.get("/", async (req, res) => {
   try {
-    const students = await pool.query(
-      'SELECT COUNT(*) FROM "Students"'
+    // 1️⃣ Active Students
+    const studentsResult = await pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM "Students"
+       WHERE "StudentStatus" = 'Active'`
+    );
+
+    // 2️⃣ Open Opportunities (Jobs abertas)
+    const jobsResult = await pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM "Jobs"
+       WHERE "JobStatus" = 'Open'`
+    );
+
+    // 3️⃣ Placements This Month
+    const placementsResult = await pool.query(
+      `SELECT COUNT(*)::int AS count
+       FROM "Placements"
+       WHERE DATE_TRUNC('month', "PlacementDate") =
+             DATE_TRUNC('month', CURRENT_DATE)`
     );
 
     res.json({
-      activeStudents: Number(students.rows[0].count),
+      activeStudents: studentsResult.rows[0].count,
+      openOpportunities: jobsResult.rows[0].count,
+      placementsThisMonth: placementsResult.rows[0].count,
     });
+
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch dashboard data" });

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import {
   kpis,
   matchedApplicants,
@@ -8,30 +8,46 @@ import {
   skillGapData,
   type Applicant,
   type KPI,
-} from '../../data/sampleData';
+} from "../../data/sampleData";
+
+type ApiDashboard = {
+  activeStudents: number;
+  openOpportunities: number;
+  placementsThisMonth: number;
+};
 
 function toInt(value: string): number {
-  const match = value.replace(/,/g, '').match(/\d+/);
+  const match = value.replace(/,/g, "").match(/\d+/);
   return match ? Number(match[0]) : 0;
 }
 
-function getKpiValue(title: KPI['title']): string {
-  return kpis.find((k) => k.title === title)?.value ?? '0';
+function getKpiValue(title: KPI["title"]): string {
+  return kpis.find((k) => k.title === title)?.value ?? "0";
 }
 
 export function useDashboardMetrics() {
+  const [api, setApi] = useState<ApiDashboard | null>(null);
+
+  useEffect(() => {
+    fetch("http://localhost:5050/api/dashboard")
+      .then((r) => r.json())
+      .then((data) => setApi(data))
+      .catch((err) => console.error("dashboard api error:", err));
+  }, []);
+
   return useMemo(() => {
     const totalPlacements = placementsOverTime.reduce((sum, m) => sum + m.placements, 0);
-    const goal = demographics.totalStudents;
-    const placed = totalPlacements;
 
+    const goal = api?.activeStudents ?? demographics.totalStudents;
+
+    const placed = totalPlacements;
     const placementRate = goal > 0 ? Math.round((placed / goal) * 100) : 0;
-    const avgTimeDays = toInt(getKpiValue('Avg. Time-to-Placement'));
+    const avgTimeDays = toInt(getKpiValue("Avg. Time-to-Placement"));
 
     const matchedCount = matchedApplicants.length;
     const activeJobs = opportunities.length;
 
-    const matchedPlacedCount = matchedApplicants.filter((a: Applicant) => a.status === 'matched').length;
+    const matchedPlacedCount = matchedApplicants.filter((a: Applicant) => a.status === "matched").length;
     const conversion = matchedCount > 0 ? Math.round((matchedPlacedCount / matchedCount) * 100) : 0;
 
     const last = placementsOverTime.at(-1)?.placements ?? 0;
@@ -41,7 +57,7 @@ export function useDashboardMetrics() {
     const milestones = [0.25, 0.5, 0.75, 1].map((x) => Math.round(goal * x));
 
     const deficitCount = skillGapData.filter((s) => s.gap < 0).length;
-    const avgPerJob = activeJobs > 0 ? (matchedCount / activeJobs).toFixed(1) : '0.0';
+    const avgPerJob = activeJobs > 0 ? (matchedCount / activeJobs).toFixed(1) : "0.0";
 
     const genderTotal =
       demographics.byGender.male + demographics.byGender.female + demographics.byGender.other;
@@ -50,9 +66,13 @@ export function useDashboardMetrics() {
     const pctFemale = genderTotal > 0 ? Math.round((demographics.byGender.female / genderTotal) * 100) : 0;
     const pctOther = genderTotal > 0 ? Math.round((demographics.byGender.other / genderTotal) * 100) : 0;
 
-    const recentPlacements = matchedApplicants.filter((a) => a.status === 'matched').slice(0, 2);
+    const recentPlacements = matchedApplicants.filter((a) => a.status === "matched").slice(0, 2);
 
     return {
+
+        activeStudents: api?.activeStudents ?? demographics.totalStudents,
+        openOpportunities: api?.openOpportunities ?? opportunities.length,
+        placementsThisMonth: api?.placementsThisMonth ?? toInt(getKpiValue("Placements This Month")),
       goal,
       placed,
       placementRate,
@@ -69,6 +89,7 @@ export function useDashboardMetrics() {
       pctFemale,
       pctOther,
       recentPlacements,
+      apiLoaded: Boolean(api),
     };
-  }, []);
+  }, [api]);
 }

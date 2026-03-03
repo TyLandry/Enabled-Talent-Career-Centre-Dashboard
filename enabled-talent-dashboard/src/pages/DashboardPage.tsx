@@ -13,7 +13,12 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <KpiRow />
+      <KpiRow
+        activeStudents={m.activeStudents}
+        placementsThisMonth={m.placementsThisMonth}
+        openOpportunities={m.openOpportunities}
+        avgTimeDays={m.avgTimeDays}
+        />
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">

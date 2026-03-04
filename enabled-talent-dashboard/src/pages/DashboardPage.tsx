@@ -43,7 +43,14 @@ export default function DashboardPage() {
             avgPerJob={m.avgPerJob}
             matchedPlacedCount={m.matchedPlacedCount}
           />
-          <StudentDemographicsCard pctMale={m.pctMale} pctFemale={m.pctFemale} pctOther={m.pctOther} />
+          {/* <StudentDemographicsCard pctMale={m.pctMale} pctFemale={m.pctFemale} pctOther={m.pctOther} /> */}
+          <StudentDemographicsCard
+              totalStudents={m.totalStudents}
+              pctMale={m.pctMale}
+              pctFemale={m.pctFemale}
+              pctOther={m.pctOther}
+              topSkills={m.topSkills}
+/>
           <AttentionNeededCard />
           <RecentPlacementsCard recentPlacements={m.recentPlacements} />
         </div>

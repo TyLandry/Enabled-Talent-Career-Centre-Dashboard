@@ -143,4 +143,63 @@ router.get("/recent", async (req, res) => {
   }
 });
 
+// GET /api/placements/performance
+// Returns KPI summary for Placement Performance card
+router.get("/performance", async (_req, res) => {
+  try {
+    // placed = total placements
+    const placedQ = await pool.query(`
+      SELECT COUNT(*)::int AS "placed"
+      FROM "Placements"
+    `);
+
+    // goal = active students
+    const goalQ = await pool.query(`
+      SELECT COUNT(*)::int AS "goal"
+      FROM "Students"
+      WHERE "StudentStatus" = 'Active'
+    `);
+
+    // avg time to placement (days)
+    const avgTimeQ = await pool.query(`
+      SELECT COALESCE(AVG("TimeToPlacement"), 0)::float AS "avgTimeDays"
+      FROM "Placements"
+    `);
+
+    // conversion = placements / applications
+    const appsQ = await pool.query(`
+      SELECT COUNT(*)::int AS "applications"
+      FROM "Applications"
+    `);
+
+    const placed = placedQ.rows[0]?.placed ?? 0;
+    const goal = goalQ.rows[0]?.goal ?? 0;
+    const avgTimeDays = Math.round(Number(avgTimeQ.rows[0]?.avgTimeDays ?? 0));
+    const applications = appsQ.rows[0]?.applications ?? 0;
+
+    const placementRate = goal > 0 ? Math.round((placed / goal) * 100) : 0;
+    const conversion = applications > 0 ? Math.round((placed / applications) * 100) : 0;
+
+    // For now (since DB is new), keep yoyChange = 0.
+    const yoyChange = 0;
+
+    const milestones = [0.25, 0.5, 0.75, 1].map((x) => Math.round(goal * x));
+
+    res.json({
+      ok: true,
+      placed,
+      goal,
+      placementRate,
+      avgTimeDays,
+      conversion,
+      yoyChange,
+      milestones,
+      applications,
+    });
+  } catch (err) {
+    console.error("placements performance error:", err);
+    res.status(500).json({ ok: false, error: "Failed to fetch placements performance" });
+  }
+});
+
 export default router;

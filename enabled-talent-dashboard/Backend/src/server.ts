@@ -9,6 +9,7 @@ import dashboardRouter from "./routes/dashboard";
 import studentsRouter from "./routes/students";
 import jobsRouter from "./routes/jobs";
 import placementsRouter from "./routes/placements";
+import applicationsRouter from "./routes/applications";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ app.use("/api/dashboard", dashboardRouter);
 app.use("/api/students", studentsRouter);
 app.use("/api/jobs", jobsRouter);
 app.use("/api/placements", placementsRouter);
+app.use("/api/applications", applicationsRouter);
 
 // // Mount the dashboard router at /api/dashboard
 // app.use('/api/dashboard', dashboardRouter);

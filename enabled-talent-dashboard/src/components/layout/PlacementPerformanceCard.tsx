@@ -68,17 +68,28 @@ export function PlacementPerformanceCard({
   }, [selectedYear, comparisonYear, comparisonYears]);
 
   // Generate data based on selected filters
+  // const displayData = useMemo(() => {
+  //   const data = generateMockData(selectedYear, timeRange);
+  //   return {
+  //     placementRate: Math.round(data.placementRate * 10) / 10,
+  //     placed: data.placed,
+  //     goal: data.goal,
+  //     avgTimeDays: data.avgTimeDays,
+  //     conversion: Math.round(data.conversion * 10) / 10,
+  //     yoyChange: Math.round(data.yoyChange * 10) / 10,
+  //   };
+  // }, [selectedYear, timeRange]);
+
   const displayData = useMemo(() => {
-    const data = generateMockData(selectedYear, timeRange);
-    return {
-      placementRate: Math.round(data.placementRate * 10) / 10,
-      placed: data.placed,
-      goal: data.goal,
-      avgTimeDays: data.avgTimeDays,
-      conversion: Math.round(data.conversion * 10) / 10,
-      yoyChange: Math.round(data.yoyChange * 10) / 10,
-    };
-  }, [selectedYear, timeRange]);
+  return {
+    placementRate: Math.round(_placementRate * 10) / 10,
+    placed: _placed,
+    goal: _goal,
+    avgTimeDays: _avgTimeDays,
+    conversion: Math.round(_conversion * 10) / 10,
+    yoyChange: Math.round(_yoyChange * 10) / 10,
+      };
+    }, [_placementRate, _placed, _goal, _avgTimeDays, _conversion, _yoyChange]);
 
   // Generate comparison data for previous year
   const comparisonData = useMemo(() => {

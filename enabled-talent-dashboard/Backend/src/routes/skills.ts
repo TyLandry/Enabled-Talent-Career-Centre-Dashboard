@@ -58,6 +58,61 @@ router.get('/', async (req, res) => {
     }
 });
 
+// GET /api/skills/gap?limit=10
+// Returns top skills where demand (jobs) exceeds supply (students)
+router.get("/gap", async (req, res) => {
+  try {
+    const limit = Math.max(1, Math.min(Number(req.query.limit) || 10, 50));
+
+    const result = await pool.query(
+      `
+      SELECT
+        s."SkillID",
+        s."SkillName",
+        COALESCE(ss.students, 0)::int AS "students",
+        COALESCE(js.jobs, 0)::int AS "jobs",
+        (COALESCE(js.jobs, 0) - COALESCE(ss.students, 0))::int AS "gap",
+        COALESCE(s."DemandStatus", 'Stable') AS "demand"
+      FROM "Skills" s
+      LEFT JOIN (
+        SELECT "SkillID", COUNT(DISTINCT "StudentID") AS students
+        FROM "StudentSkills"
+        GROUP BY "SkillID"
+      ) ss ON ss."SkillID" = s."SkillID"
+      LEFT JOIN (
+        SELECT "SkillID", COUNT(DISTINCT "JobID") AS jobs
+        FROM "JobSkills"
+        GROUP BY "SkillID"
+      ) js ON js."SkillID" = s."SkillID"
+      ORDER BY "gap" DESC, s."SkillName" ASC
+      LIMIT $1
+      `,
+      [limit]
+    );
+
+    // Normalize "demand" for the way the UI expects: Rising | Stable | Declining
+    const normalizeDemand = (d: any) => {
+      const v = String(d ?? "").toLowerCase();
+      if (v.includes("rising") || v.includes("high")) return "Rising";
+      if (v.includes("declin") || v.includes("low")) return "Declining";
+      return "Stable";
+    };
+
+    const data = result.rows.map((r: any) => ({
+      skill: r.SkillName,
+      students: Number(r.students) || 0,
+      jobs: Number(r.jobs) || 0,
+      gap: Number(r.gap) || 0,
+      demand: normalizeDemand(r.demand),
+    }));
+
+    res.json({ ok: true, count: data.length, data });
+  } catch (err) {
+    console.error("skills gap error:", err);
+    res.status(500).json({ ok: false, error: "Failed to fetch skill gap" });
+  }
+});
+
 //GET /api/skills/:id
 router.get('/:id', async (req, res) => {
     try {
@@ -81,6 +136,7 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ ok: false, error: "Failed to fetch skill details" });
     }
 });
+
 
 //POST /api/skills
 router.post('/', async (req, res) => {

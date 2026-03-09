@@ -114,6 +114,21 @@ router.get("/demographics", async (req, res) => {
       console.error("Error updating student:", err);
       res.status(500).json({ ok: false, error: "Failed to update student" });
     }
+  });
+    router.post("/", async (req, res) => {
+      const { FirstName, LastName, Phone , DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate } = req.body;
+      try {
+        const result = await pool.query(
+          `INSERT INTO "Students" ("FirstName", "LastName", "Phone", "DateOfBirth", "Gender", "Email", "StudentStatus", "EnrollmentDate")
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           RETURNING *`,
+          [FirstName, LastName, Phone, DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate]
+        );
+        res.json({ ok: true, student: result.rows[0] });
+      } catch (err) {
+        console.error("Error creating student:", err);
+        res.status(500).json({ ok: false, error: "Failed to create student" });
+      }
 });
 
 export default router;

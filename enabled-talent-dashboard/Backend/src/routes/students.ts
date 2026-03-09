@@ -89,4 +89,31 @@ router.get("/demographics", async (req, res) => {
   }
 });
 
+  //Do PUT /api/students
+  //No to manually input studentid since it's auto generated
+
+  router.put("/", async (req, res) => {
+    const { StudentID, FirstName, LastName, Phone , DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate } = req.body;
+    try {
+      const result = await pool.query(
+        `UPDATE "Students"
+         SET "FirstName" = $1,
+             "LastName" = $2,
+             "Phone" = $3,
+             "DateOfBirth" = $4,
+             "Gender" = $5,
+             "Email" = $6,
+             "StudentStatus" = $7,
+             "EnrollmentDate" = $8
+         WHERE "StudentID" = $9
+         RETURNING *`,
+        [FirstName, LastName, Phone, DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate, StudentID]
+      );
+      res.json({ ok: true, student: result.rows[0] });
+    } catch (err) {
+      console.error("Error updating student:", err);
+      res.status(500).json({ ok: false, error: "Failed to update student" });
+    }
+});
+
 export default router;

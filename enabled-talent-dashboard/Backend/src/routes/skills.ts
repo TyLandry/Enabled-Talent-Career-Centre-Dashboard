@@ -72,7 +72,7 @@ router.get("/gap", async (req, res) => {
         s."SkillName",
         COALESCE(ss.students, 0)::int AS "students",
         COALESCE(js.jobs, 0)::int AS "jobs",
-        (COALESCE(js.jobs, 0) - COALESCE(ss.students, 0))::int AS "gap",
+        (COALESCE(ss.students, 0) - COALESCE(js.jobs, 0))::int AS "gap",
         COALESCE(s."DemandStatus", 'Stable') AS "demand"
       FROM "Skills" s
       LEFT JOIN (

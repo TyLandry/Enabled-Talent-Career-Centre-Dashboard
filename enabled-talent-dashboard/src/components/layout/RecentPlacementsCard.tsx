@@ -1,4 +1,9 @@
-import type { Applicant } from '../../data/sampleData';
+type Applicant = {
+  id: string;
+  name: string;
+  matchedRole?: string;
+  status: 'matched' | 'new' | 'in-review' | 'needs-action';
+};
 
 export function RecentPlacementsCard({ recentPlacements }: { recentPlacements: Applicant[] }) {
   return (

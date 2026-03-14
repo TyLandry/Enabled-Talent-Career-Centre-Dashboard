@@ -1,66 +1,60 @@
+import DashboardLayout from '../components/layout/DashboardLayout';
 import { KpiRow } from '../components/layout/KpiRow';
-import { useDashboardMetrics } from '../components/layout/useDashboardMetrics';
 import { PlacementPerformanceCard } from '../components/layout/PlacementPerformanceCard';
 import { MatchedApplicantsCard } from '../components/layout/MatchedApplicantsCard';
 import { SkillGapAnalysisCard } from '../components/layout/SkillGapAnalysisCard';
 import { StudentDemographicsCard } from '../components/layout/StudentDemographicsCard';
-import { AttentionNeededCard } from '../components/layout/AttentionNeededCard';
-import { RecentPlacementsCard } from '../components/layout/RecentPlacementsCard';
 import { RecentOpportunitiesCard } from '../components/layout/RecentOpportunitiesCard';
+import { RecentPlacementsCard } from '../components/layout/RecentPlacementsCard';
+import { AttentionNeededCard } from '../components/layout/AttentionNeededCard';
+import { useDashboardMetrics } from '../components/layout/useDashboardMetrics';
 
 export default function DashboardPage() {
-  const m = useDashboardMetrics();
+  const metrics = useDashboardMetrics();
 
   return (
-    <div className="space-y-6">
-      <KpiRow
-        activeStudents={m.activeStudents}
-        placementsThisMonth={m.placementsThisMonth}
-        openOpportunities={m.openOpportunities}
-        avgTimeDays={m.avgTimeDays}
+    <DashboardLayout>
+      <div className="space-y-6">
+        <KpiRow
+          activeStudents={metrics.activeStudents}
+          placementsThisMonth={metrics.placementsThisMonth}
+          openOpportunities={metrics.openOpportunities}
+          avgTimeDays={metrics.avgTimeDays}
         />
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Column */}
-        <div className="lg:col-span-8 space-y-6">
-          <PlacementPerformanceCard
-            placementRate={m.placementRate}
-            placed={m.placed}
-            goal={m.goal}
-            avgTimeDays={m.avgTimeDays}
-            conversion={m.conversion}
-            yoyChange={m.yoyChange}
-          />
-          <SkillGapAnalysisCard deficitCount={m.deficitCount} />
-        </div>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="lg:col-span-2 space-y-6">
+            <PlacementPerformanceCard
+              placementRate={metrics.placementRate}
+              placed={metrics.placed}
+              goal={metrics.goal}
+              avgTimeDays={metrics.avgTimeDays}
+              conversion={metrics.conversion}
+              yoyChange={metrics.yoyChange}
+            />
+            <SkillGapAnalysisCard deficitCount={metrics.deficitCount} />
+            <RecentOpportunitiesCard opportunities={metrics.opportunities} />
+          </div>
 
-        {/* Right Column */}
-        <div className="lg:col-span-4 space-y-6">
-          <MatchedApplicantsCard
-            matchedCount={m.matchedCount}
-            activeJobs={m.activeJobs}
-            avgPerJob={m.avgPerJob}
-            matchedPlacedCount={m.matchedPlacedCount}
-          />
-          {/* <StudentDemographicsCard pctMale={m.pctMale} pctFemale={m.pctFemale} pctOther={m.pctOther} /> */}
-          <StudentDemographicsCard
-              totalStudents={m.totalStudents}
-              pctMale={m.pctMale}
-              pctFemale={m.pctFemale}
-              pctOther={m.pctOther}
-              topSkills={m.topSkills}
-/>
-          <AttentionNeededCard />
-          <RecentPlacementsCard recentPlacements={m.recentPlacements} />
+          <div className="space-y-6">
+            <MatchedApplicantsCard
+              matchedCount={metrics.matchedCount}
+              activeJobs={metrics.activeJobs}
+              avgPerJob={metrics.avgPerJob}
+              matchedPlacedCount={metrics.matchedPlacedCount}
+            />
+            <StudentDemographicsCard
+              totalStudents={metrics.totalStudents}
+              pctMale={metrics.pctMale}
+              pctFemale={metrics.pctFemale}
+              pctOther={metrics.pctOther}
+              topSkills={metrics.topSkills}
+            />
+            <AttentionNeededCard />
+            <RecentPlacementsCard recentPlacements={metrics.recentPlacements} />
+          </div>
         </div>
       </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-8">
-          <RecentOpportunitiesCard />
-        </div>
-      </div>
-    </div>
+    </DashboardLayout>
   );
 }

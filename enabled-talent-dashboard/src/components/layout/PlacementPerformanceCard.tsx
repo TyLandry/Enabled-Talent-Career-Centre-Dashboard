@@ -13,6 +13,7 @@ type Props = {
   avgTimeDays: number;
   conversion: number;
   yoyChange: number;
+  periodChange?: number;
 };
 
 // Mock data generator for different years and time ranges
@@ -46,17 +47,60 @@ export function PlacementPerformanceCard({
   avgTimeDays: _avgTimeDays,
   conversion: _conversion,
   yoyChange: _yoyChange,
+  periodChange: _periodChange,
 }: Props) {
-  const [selectedYear, setSelectedYear] = useState(2025);
+  const [selectedYear, setSelectedYear] = useState(2026);
   const [showComparison, setShowComparison] = useState(true);
-  const [comparisonYear, setComparisonYear] = useState(2024);
-  const [timeRange, setTimeRange] = useState<'1W' | '1M' | '3M' | '1Y'>('1M');
+  const [comparisonYear, setComparisonYear] = useState(2025);
+  const [timeRange, setTimeRange] = useState<'1W' | '1M' | '3M' | '1Y'>('1Y');
+  
+  // State for fetched data
+  const [fetchedData, setFetchedData] = useState<{
+    placementRate: number;
+    placed: number;
+    goal: number;
+    avgTimeDays: number;
+    avgTimeDiff: number;
+    conversion: number;
+    yoyChange: number;
+    periodChange: number;
+  } | null>(null);
 
   const years = [2026, 2025, 2024, 2023];
   const timeRanges: Array<'1W' | '1M' | '3M' | '1Y'> = ['1W', '1M', '3M', '1Y'];
   
   // Available years for comparison (exclude selected year)
   const comparisonYears = years.filter(y => y !== selectedYear);
+
+  // Fetch data when year or timeRange changes
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Include comparisonYear parameter only when showComparison is true
+        const url = showComparison 
+          ? `http://localhost:5050/api/placements/performance?year=${selectedYear}&timeRange=${timeRange}&comparisonYear=${comparisonYear}`
+          : `http://localhost:5050/api/placements/performance?year=${selectedYear}&timeRange=${timeRange}`;
+        
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          setFetchedData({
+            placementRate: data.placementRate,
+            placed: data.placed,
+            goal: data.goal,
+            avgTimeDays: data.avgTimeDays,
+            avgTimeDiff: data.avgTimeDiff,
+            conversion: data.conversion,
+            yoyChange: data.yoyChange,
+            periodChange: data.periodChange,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching placement performance:', error);
+      }
+    };
+    fetchData();
+  }, [selectedYear, timeRange, showComparison, comparisonYear]);
 
   // Auto-adjust comparison year if it conflicts with selected year
   useEffect(() => {
@@ -67,33 +111,67 @@ export function PlacementPerformanceCard({
     }
   }, [selectedYear, comparisonYear, comparisonYears]);
 
-  // Generate data based on selected filters
-  // const displayData = useMemo(() => {
-  //   const data = generateMockData(selectedYear, timeRange);
-  //   return {
-  //     placementRate: Math.round(data.placementRate * 10) / 10,
-  //     placed: data.placed,
-  //     goal: data.goal,
-  //     avgTimeDays: data.avgTimeDays,
-  //     conversion: Math.round(data.conversion * 10) / 10,
-  //     yoyChange: Math.round(data.yoyChange * 10) / 10,
-  //   };
-  // }, [selectedYear, timeRange]);
-
+  // Use fetched data if available, otherwise fall back to props
   const displayData = useMemo(() => {
-  return {
-    placementRate: Math.round(_placementRate * 10) / 10,
-    placed: _placed,
-    goal: _goal,
-    avgTimeDays: _avgTimeDays,
-    conversion: Math.round(_conversion * 10) / 10,
-    yoyChange: Math.round(_yoyChange * 10) / 10,
-      };
-    }, [_placementRate, _placed, _goal, _avgTimeDays, _conversion, _yoyChange]);
+    const data = fetchedData || {
+      placementRate: _placementRate,
+      placed: _placed,
+      goal: _goal,
+      avgTimeDays: _avgTimeDays,
+      avgTimeDiff: 0,
+      conversion: _conversion,
+      yoyChange: _yoyChange,
+      periodChange: _periodChange || 0,
+    };
+    return {
+      placementRate: Math.round(data.placementRate * 10) / 10,
+      placed: data.placed,
+      goal: data.goal,
+      avgTimeDays: data.avgTimeDays,
+      avgTimeDiff: data.avgTimeDiff,
+      conversion: Math.round(data.conversion * 10) / 10,
+      yoyChange: Math.round(data.yoyChange * 10) / 10,
+      periodChange: Math.round(data.periodChange * 10) / 10,
+    };
+  }, [fetchedData, _placementRate, _placed, _goal, _avgTimeDays, _conversion, _yoyChange, _periodChange]);
+
+  // Fetch comparison data for previous year
+  const [comparisonFetchedData, setComparisonFetchedData] = useState<{
+    placementRate: number;
+    placed: number;
+    goal: number;
+    avgTimeDays: number;
+    conversion: number;
+    yoyChange: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!showComparison) return;
+    
+    const fetchComparisonData = async () => {
+      try {
+        const response = await fetch(`http://localhost:5050/api/placements/performance?year=${comparisonYear}&timeRange=${timeRange}`);
+        if (response.ok) {
+          const data = await response.json();
+          setComparisonFetchedData({
+            placementRate: data.placementRate,
+            placed: data.placed,
+            goal: data.goal,
+            avgTimeDays: data.avgTimeDays,
+            conversion: data.conversion,
+            yoyChange: data.yoyChange,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching comparison data:', error);
+      }
+    };
+    fetchComparisonData();
+  }, [comparisonYear, timeRange, showComparison]);
 
   // Generate comparison data for previous year
   const comparisonData = useMemo(() => {
-    const data = generateMockData(comparisonYear, timeRange);
+    const data = comparisonFetchedData || generateMockData(comparisonYear, timeRange);
     return {
       placementRate: Math.round(data.placementRate * 10) / 10,
       placed: data.placed,
@@ -102,7 +180,7 @@ export function PlacementPerformanceCard({
       conversion: Math.round(data.conversion * 10) / 10,
       yoyChange: Math.round(data.yoyChange * 10) / 10,
     };
-  }, [comparisonYear, timeRange]);
+  }, [comparisonFetchedData, comparisonYear, timeRange]);
 
   // Calculate differences for comparison
   const differences = useMemo(() => {
@@ -119,7 +197,8 @@ export function PlacementPerformanceCard({
 
   // Calculate dynamic milestones based on current goal
   const dynamicMilestones = useMemo(() => {
-    return [0.25, 0.5, 0.75, 1].map((x) => Math.round(displayData.goal * x));
+    if (displayData.goal === 0) return [];
+    return [0, 0.25, 0.5, 0.75, 1].map((x) => Math.round(displayData.goal * x));
   }, [displayData.goal]);
 
   return (
@@ -127,7 +206,7 @@ export function PlacementPerformanceCard({
       <div className="flex items-center justify-between">
         <div>
           <div className="text-base font-semibold text-gray-900">Placement Performance</div>
-          <div className="mt-1 text-sm text-gray-500">Progress and key metrics (from sample data)</div>
+          <div className="mt-1 text-sm text-gray-500">Progress and key metrics</div>
         </div>
 
         {/* Filter Bar */}
@@ -262,7 +341,12 @@ export function PlacementPerformanceCard({
                   {differences.placed >= 0 ? '+' : ''}{differences.placed} vs {comparisonYear}
                 </div>
               ) : (
-                <div className="mt-2 text-xs text-emerald-700">↗ {displayData.yoyChange}% vs last month</div>
+                <div className={classNames(
+                  'mt-2 text-xs font-medium',
+                  displayData.periodChange >= 0 ? 'text-emerald-700' : 'text-red-600'
+                )}>
+                  {displayData.periodChange >= 0 ? '↗' : '↘'} {displayData.periodChange >= 0 ? '+' : ''}{displayData.periodChange}% vs last period
+                </div>
               )}
             </div>
 
@@ -282,7 +366,16 @@ export function PlacementPerformanceCard({
                   {differences.avgTimeDays > 0 ? '+' : ''}{differences.avgTimeDays} vs {comparisonYear}
                 </div>
               ) : (
-                <div className="mt-2 text-xs text-gray-500">from KPI data</div>
+                <div className={classNames(
+                  'mt-2 text-xs font-medium',
+                  displayData.avgTimeDiff > 0 ? 'text-emerald-700' : displayData.avgTimeDiff < 0 ? 'text-red-600' : 'text-gray-500'
+                )}>
+                  {displayData.avgTimeDiff !== 0 ? (
+                    <>{displayData.avgTimeDiff > 0 ? '↗' : '↘'} {Math.abs(displayData.avgTimeDiff)} days {displayData.avgTimeDiff > 0 ? 'faster' : 'slower'}</>
+                  ) : (
+                    'from KPI data'
+                  )}
+                </div>
               )}
             </div>
 
@@ -315,7 +408,7 @@ export function PlacementPerformanceCard({
               >
                 {displayData.yoyChange >= 0 ? `+${displayData.yoyChange}%` : `${displayData.yoyChange}%`}
               </div>
-              <div className="mt-2 text-xs text-gray-500">month-over-month</div>
+              <div className="mt-2 text-xs text-gray-500">year-to-year</div>
             </div>
           </div>
         </div>

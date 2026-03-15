@@ -453,4 +453,142 @@ router.get("/performance", async (req, res) => {
   }
 });
 
+// POST /api/placements
+router.post("/", async (req, res) => {
+  try {
+    const {
+      ApplicationID,
+      StaffID,
+      PlacementDate,
+      TimeToPlacement,
+      Salary,
+      PlacementType,
+      PlacementStatus,
+    } = req.body;
+
+    if (!ApplicationID) {
+      return res.status(400).json({
+        ok: false,
+        error: "ApplicationID is required",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO "Placements"
+      (
+        "ApplicationID",
+        "StaffID",
+        "PlacementDate",
+        "TimeToPlacement",
+        "Salary",
+        "PlacementType",
+        "PlacementStatus"
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7)
+      RETURNING *
+      `,
+      [
+        ApplicationID,
+        StaffID ?? null,
+        PlacementDate ?? null,
+        TimeToPlacement ?? null,
+        Salary ?? null,
+        PlacementType ?? null,
+        PlacementStatus ?? null,
+      ]
+    );
+
+    res.status(201).json({ ok: true, placement: result.rows[0] });
+  } catch (err) {
+    console.error("Error creating placement:", err);
+    res.status(500).json({ ok: false, error: "Failed to create placement" });
+  }
+});
+
+// PUT /api/placements/:id
+router.put("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid placement ID" });
+    }
+
+    const {
+      ApplicationID,
+      StaffID,
+      PlacementDate,
+      TimeToPlacement,
+      Salary,
+      PlacementType,
+      PlacementStatus,
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE "Placements"
+      SET
+        "ApplicationID" = $1,
+        "StaffID" = $2,
+        "PlacementDate" = $3,
+        "TimeToPlacement" = $4,
+        "Salary" = $5,
+        "PlacementType" = $6,
+        "PlacementStatus" = $7
+      WHERE "PlacementID" = $8
+      RETURNING *
+      `,
+      [
+        ApplicationID ?? null,
+        StaffID ?? null,
+        PlacementDate ?? null,
+        TimeToPlacement ?? null,
+        Salary ?? null,
+        PlacementType ?? null,
+        PlacementStatus ?? null,
+        id,
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Placement not found" });
+    }
+
+    res.json({ ok: true, placement: result.rows[0] });
+  } catch (err) {
+    console.error("Error updating placement:", err);
+    res.status(500).json({ ok: false, error: "Failed to update placement" });
+  }
+});
+
+// DELETE /api/placements/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid placement ID" });
+    }
+
+    const result = await pool.query(
+      `
+      DELETE FROM "Placements"
+      WHERE "PlacementID" = $1
+      RETURNING "PlacementID"
+      `,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Placement not found" });
+    }
+
+    res.json({ ok: true, deletedPlacementID: result.rows[0].PlacementID });
+  } catch (err: any) {
+    console.error("Error deleting placement:", err);
+    res.status(500).json({ ok: false, error: "Failed to delete placement" });
+  }
+});
+
 export default router;

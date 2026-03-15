@@ -131,4 +131,38 @@ router.get("/demographics", async (req, res) => {
       }
 });
 
+// DELETE /api/students/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid student ID" });
+    }
+
+    const result = await pool.query(
+      `DELETE FROM "Students"
+       WHERE "StudentID" = $1
+       RETURNING "StudentID"`,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Student not found" });
+    }
+
+    res.json({ ok: true, deletedStudentID: result.rows[0].StudentID });
+  } catch (err: any) {
+    if (err.code === "23503") {
+      return res.status(409).json({
+        ok: false,
+        error: "Cannot delete student because it is referenced by other records",
+      });
+    }
+
+    console.error("Error deleting student:", err);
+    res.status(500).json({ ok: false, error: "Failed to delete student" });
+  }
+});
+
 export default router;

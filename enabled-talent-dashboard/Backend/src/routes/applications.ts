@@ -56,4 +56,194 @@ router.get("/matched", async (req, res) => {
   }
 });
 
+// GET /api/applications
+router.get("/", async (_req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        "ApplicationID",
+        "StudentID",
+        "JobID",
+        "DateApplied",
+        "ApplicationStatus",
+        "MatchScore"
+      FROM "Applications"
+      ORDER BY "DateApplied" DESC NULLS LAST
+    `);
+
+    res.json({ ok: true, count: result.rowCount ?? 0, applications: result.rows });
+  } catch (err) {
+    console.error("Error fetching applications:", err);
+    res.status(500).json({ ok: false, error: "Failed to fetch applications" });
+  }
+});
+
+// GET /api/applications/:id
+router.get("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid application ID" });
+    }
+
+    const result = await pool.query(
+      `
+      SELECT
+        "ApplicationID",
+        "StudentID",
+        "JobID",
+        "DateApplied",
+        "ApplicationStatus",
+        "MatchScore"
+      FROM "Applications"
+      WHERE "ApplicationID" = $1
+      `,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Application not found" });
+    }
+
+    res.json({ ok: true, application: result.rows[0] });
+  } catch (err) {
+    console.error("Error fetching application details:", err);
+    res.status(500).json({ ok: false, error: "Failed to fetch application details" });
+  }
+});
+
+// POST /api/applications
+router.post("/", async (req, res) => {
+  try {
+    const {
+      StudentID,
+      JobID,
+      DateApplied,
+      ApplicationStatus,
+      MatchScore,
+    } = req.body;
+
+    if (!StudentID || !JobID) {
+      return res.status(400).json({
+        ok: false,
+        error: "StudentID and JobID are required",
+      });
+    }
+
+    const result = await pool.query(
+      `
+      INSERT INTO "Applications"
+      (
+        "StudentID",
+        "JobID",
+        "DateApplied",
+        "ApplicationStatus",
+        "MatchScore"
+      )
+      VALUES ($1,$2,$3,$4,$5)
+      RETURNING *
+      `,
+      [
+        StudentID,
+        JobID,
+        DateApplied ?? null,
+        ApplicationStatus ?? null,
+        MatchScore ?? null,
+      ]
+    );
+
+    res.status(201).json({ ok: true, application: result.rows[0] });
+  } catch (err: any) {
+    console.error("Error creating application:", err);
+    res.status(500).json({ ok: false, error: "Failed to create application" });
+  }
+});
+
+// PUT /api/applications/:id
+router.put("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid application ID" });
+    }
+
+    const {
+      StudentID,
+      JobID,
+      DateApplied,
+      ApplicationStatus,
+      MatchScore,
+    } = req.body;
+
+    const result = await pool.query(
+      `
+      UPDATE "Applications"
+      SET
+        "StudentID" = $1,
+        "JobID" = $2,
+        "DateApplied" = $3,
+        "ApplicationStatus" = $4,
+        "MatchScore" = $5
+      WHERE "ApplicationID" = $6
+      RETURNING *
+      `,
+      [
+        StudentID ?? null,
+        JobID ?? null,
+        DateApplied ?? null,
+        ApplicationStatus ?? null,
+        MatchScore ?? null,
+        id,
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Application not found" });
+    }
+
+    res.json({ ok: true, application: result.rows[0] });
+  } catch (err) {
+    console.error("Error updating application:", err);
+    res.status(500).json({ ok: false, error: "Failed to update application" });
+  }
+});
+
+// DELETE /api/applications/:id
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ ok: false, error: "Invalid application ID" });
+    }
+
+    const result = await pool.query(
+      `
+      DELETE FROM "Applications"
+      WHERE "ApplicationID" = $1
+      RETURNING "ApplicationID"
+      `,
+      [id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Application not found" });
+    }
+
+    res.json({ ok: true, deletedApplicationID: result.rows[0].ApplicationID });
+  } catch (err: any) {
+    if (err.code === "23503") {
+      return res.status(409).json({
+        ok: false,
+        error: "Cannot delete application because it is referenced by other records",
+      });
+    }
+
+    console.error("Error deleting application:", err);
+    res.status(500).json({ ok: false, error: "Failed to delete application" });
+  }
+});
+
 export default router;

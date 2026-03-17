@@ -1,17 +1,30 @@
-# Enabled Talent Career Centre Dashboard (Frontend)
+# Enabled Talent Career Centre Dashboard
 
-Frontend-stack for dashboard has been implemented.
-Built with **React (w/typescirpt) + Vite + Tailwind CSS (v4)**. This implementation will be focused first on doing the front-end side of the dashboard.
+Full-stack career centre dashboard for tracking students, job opportunities, applications, and placements.
+Built with **React + TypeScript + Vite + Tailwind CSS (v4)** on the frontend, and **Node.js + Express + TypeScript + PostgreSQL** on the backend.
 
 ---
 
 # Tech Stack
 
-- **React + typescirpt** (UI)
+## Frontend
+
+- **React + TypeScript** (UI)
 - **Vite** (dev server + build)
 - **Tailwind CSS v4** (styling)
 - **lucide-react** (icons)
-- (Planned) **Recharts** (charts)
+- **Recharts** (charts)
+
+## Backend
+
+- **Node.js** (runtime)
+- **Express v5** (API framework)
+- **TypeScript** (type safety)
+- **PostgreSQL + pg** (database)
+- **dotenv** (environment variables)
+- **cors** (cross-origin requests)
+- **helmet** (HTTP security headers)
+- **express-rate-limit** (rate limiting)
 
 ---
 
@@ -19,58 +32,144 @@ Built with **React (w/typescirpt) + Vite + Tailwind CSS (v4)**. This implementat
 
 Install the following:
 
-- **Node.js (LTS recommended)**  
-  Verify:
+- **Node.js (LTS recommended)**
+- **PostgreSQL** (running locally or remote)
 
-  ```bash
-  node -v
-  npm -v
+Verify:
 
-  After that, use cd enabled-talent-dashboard to install the following:
-    npm install - For node modules
-    npm i -D tailwindcss autoprefixer - installing tailwindcss
-  ```
-
-To verify the installation of Tailwind, run this:
-- npm ls tailwindcss
-
-# (Backend)
-
-Backend-stack for dashboard has been implemented.
-Built with **Node.js + Express + TypeScript.** This implementation will focus on handling server-side logic, API routes, and future database integration.
+```bash
+node -v
+npm -v
+```
 
 ---
 
+# Getting Started
 
-# Tech Stack
+## 1. Frontend
 
-- **Node.js** (runtime)
-- **Express** (API framework)
-- **TypeScript** (type safety)
-- **dotenv** (environment variables)
-- **cors** (cross-origin requests support)
-- (Planned) Database Integration
-
- ---
- 
-# Prerequisites
-
-  Install the following:
-  **Node.js** (LTS recommended)
-  ```bash
-  Verify:
-  node -v
-  npm -v
+```bash
+cd enabled-talent-dashboard
+npm install
+npm run dev
 ```
 
-Use cd Backend to install the following:
- ```bash
-  npm init -y - initialize backend project
-  npm i express cors dotenv - install runtime dependencies
-  npm i -D typescript ts-node-dev @types/node @types/express - install dev dependencies
-  npx tsc --init - initialize TypeScript configuration
-  npm i express pg dotenv cors - install additional dependency
-   ```
+Runs at `http://localhost:5173`
 
-To run the backend in development mode, run this:
-- npm run dev
+## 2. Backend
+
+```bash
+cd enabled-talent-dashboard/Backend
+cp .env.example .env   # fill in your values
+npm install
+npm run dev
+```
+
+Runs at `http://localhost:5050`
+
+---
+
+# Environment Setup (Backend)
+
+Copy `.env.example` to `.env` inside the `Backend/` folder and fill in your values:
+
+```env
+PORT=5050
+DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+NODE_ENV=development
+ALLOWED_ORIGINS=http://localhost:5173
+```
+
+> Never commit `.env` — it is listed in `.gitignore`.
+
+---
+
+# API Endpoints
+
+All endpoints are prefixed with `/api`.
+
+| Method | Endpoint                        | Description                                                     |
+| ------ | ------------------------------- | --------------------------------------------------------------- |
+| GET    | `/health`                       | Server + DB health check                                        |
+| GET    | `/dashboard`                    | KPI summary (active students, open jobs, placements this month) |
+| GET    | `/skills`                       | List all skills (optional `?q=` search)                         |
+| GET    | `/skills/gap`                   | Skill gap analysis (students vs job demand)                     |
+| GET    | `/skills/:id`                   | Get skill by ID                                                 |
+| POST   | `/skills`                       | Create skill                                                    |
+| PUT    | `/skills/:id`                   | Update skill                                                    |
+| DELETE | `/skills/:id`                   | Delete skill                                                    |
+| GET    | `/students`                     | List all students                                               |
+| GET    | `/students/demographics`        | Gender split + top skills                                       |
+| POST   | `/students`                     | Create student                                                  |
+| PUT    | `/students`                     | Update student                                                  |
+| DELETE | `/students/:id`                 | Delete student                                                  |
+| GET    | `/jobs`                         | List all jobs                                                   |
+| GET    | `/jobs/recent`                  | Recent job postings                                             |
+| GET    | `/jobs/:id`                     | Get job by ID                                                   |
+| POST   | `/jobs`                         | Create job                                                      |
+| PUT    | `/jobs/:id`                     | Update job                                                      |
+| DELETE | `/jobs/:id`                     | Delete job                                                      |
+| GET    | `/placements`                   | List all placements                                             |
+| GET    | `/placements/recent`            | Recent placements                                               |
+| GET    | `/placements/this-month`        | Placements count this month                                     |
+| GET    | `/placements/avg-time`          | Average days to placement                                       |
+| GET    | `/placements/over-time`         | Monthly placements series                                       |
+| GET    | `/placements/performance`       | KPI summary with date range filtering                           |
+| POST   | `/placements`                   | Create placement                                                |
+| PUT    | `/placements/:id`               | Update placement                                                |
+| DELETE | `/placements/:id`               | Delete placement                                                |
+| GET    | `/applications`                 | List all applications                                           |
+| GET    | `/applications/matched`         | Recent matched applications                                     |
+| GET    | `/applications/matched-summary` | Matched/accepted counts                                         |
+| GET    | `/applications/:id`             | Get application by ID                                           |
+| POST   | `/applications`                 | Create application                                              |
+| PUT    | `/applications/:id`             | Update application                                              |
+| DELETE | `/applications/:id`             | Delete application                                              |
+
+---
+
+# Security
+
+The backend is hardened with the following measures:
+
+- **Helmet** — sets secure HTTP headers (XSS, clickjacking, MIME sniffing protection)
+- **CORS allowlist** — only origins listed in `ALLOWED_ORIGINS` are accepted
+- **Rate limiting** — 200 requests per 15 minutes per IP
+- **Body size limit** — requests larger than 10KB are rejected
+- **Input validation** — all fields are type-checked, length-capped, and enum-validated before hitting the database
+- **Parameterized queries** — all SQL uses `$1`/`$2` placeholders, preventing SQL injection
+- **No credential leaks** — `.env` is git-ignored; database URL is never logged
+
+---
+
+# (Legacy setup notes)
+
+To install frontend dependencies manually:
+
+```bash
+cd enabled-talent-dashboard
+npm install
+npm i -D tailwindcss autoprefixer
+```
+
+To verify Tailwind installation:
+
+```bash
+npm ls tailwindcss
+```
+
+To install backend dependencies manually:
+
+```bash
+cd enabled-talent-dashboard/Backend
+npm init -y
+npm i express cors dotenv pg helmet express-rate-limit
+npm i -D typescript ts-node-dev @types/node @types/express
+npx tsc --init
+```
+
+To run the backend in development mode:
+
+```bash
+npm run dev
+```

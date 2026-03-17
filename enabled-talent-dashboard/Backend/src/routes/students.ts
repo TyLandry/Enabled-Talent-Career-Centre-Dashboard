@@ -3,11 +3,25 @@ import { pool } from "../db/pool";
 
 const router = Router();
 
-/**
- * GET /api/students
- * Returns list of students (basic)
- */
-router.get("/", async (req, res) => {
+// UUID v4 validation regex
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const ALLOWED_STATUSES = ["Active", "Inactive", "Graduated", "Withdrawn"];
+const ALLOWED_GENDERS  = ["Male", "Female", "Other"];
+
+function isValidUUID(v: unknown): v is string {
+  return typeof v === "string" && UUID_RE.test(v);
+}
+
+function safeStr(v: unknown, max: number): string | null {
+  if (v == null) return null;
+  const s = String(v).trim();
+  return s.length > 0 ? s.slice(0, max) : null;
+}
+
+// GET /api/students
+router.get("/", async (_req, res) => {
   try {
     const result = await pool.query(`
       SELECT
@@ -20,31 +34,20 @@ router.get("/", async (req, res) => {
       ORDER BY "LastName" ASC NULLS LAST, "FirstName" ASC NULLS LAST
     `);
 
-    res.json({
-      ok: true,
-      count: result.rowCount ?? 0,
-      students: result.rows,
-    });
+    res.json({ ok: true, count: result.rowCount ?? 0, students: result.rows });
   } catch (err) {
     console.error("Error fetching students:", err);
     res.status(500).json({ ok: false, error: "Failed to fetch students" });
   }
 });
 
-/**
- * GET /api/students/demographics
- * Returns totals + gender split + top skills
- */
-router.get("/demographics", async (req, res) => {
+// GET /api/students/demographics
+router.get("/demographics", async (_req, res) => {
   try {
-    // 1) Total students (you can filter Active if you want)
     const totalResult = await pool.query(`
-      SELECT COUNT(*)::int AS "total"
-      FROM "Students"
+      SELECT COUNT(*)::int AS "total" FROM "Students"
     `);
 
-    // 2) Gender split (normalize messy values)
-    // This groups everything into: male / female / other
     const genderResult = await pool.query(`
       SELECT
         CASE
@@ -64,8 +67,6 @@ router.get("/demographics", async (req, res) => {
       byGender[key] = Number(row.count) || 0;
     }
 
-    // 3) Top skills (students per skill)
-    // If DB is empty, returns []
     const topSkillsResult = await pool.query(`
       SELECT
         s."SkillName" AS "skill",
@@ -81,7 +82,7 @@ router.get("/demographics", async (req, res) => {
       ok: true,
       totalStudents: Number(totalResult.rows[0]?.total ?? 0),
       byGender,
-      topSkills: topSkillsResult.rows, // [{ skill: "JavaScript", students: 12 }, ...]
+      topSkills: topSkillsResult.rows,
     });
   } catch (err) {
     console.error("Error fetching student demographics:", err);
@@ -89,61 +90,147 @@ router.get("/demographics", async (req, res) => {
   }
 });
 
-  //Do PUT /api/students
-  //No to manually input studentid since it's auto generated
+// POST /api/students
+router.post("/", async (req, res) => {
+  const {
+    FirstName,
+    LastName,
+    Phone,
+    DateOfBirth,
+    Gender,
+    Email,
+    StudentStatus,
+    EnrollmentDate,
+  } = req.body;
 
-  router.put("/", async (req, res) => {
-    const { StudentID, FirstName, LastName, Phone , DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate } = req.body;
-    try {
-      const result = await pool.query(
-        `UPDATE "Students"
-         SET "FirstName" = $1,
-             "LastName" = $2,
-             "Phone" = $3,
-             "DateOfBirth" = $4,
-             "Gender" = $5,
-             "Email" = $6,
-             "StudentStatus" = $7,
-             "EnrollmentDate" = $8
-         WHERE "StudentID" = $9
-         RETURNING *`,
-        [FirstName, LastName, Phone, DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate, StudentID]
-      );
-      res.json({ ok: true, student: result.rows[0] });
-    } catch (err) {
-      console.error("Error updating student:", err);
-      res.status(500).json({ ok: false, error: "Failed to update student" });
+  const firstName = safeStr(FirstName, 100);
+  const lastName  = safeStr(LastName, 100);
+  const email     = safeStr(Email, 255);
+
+  if (!firstName) {
+    return res.status(400).json({ ok: false, error: "FirstName is required" });
+  }
+  if (!lastName) {
+    return res.status(400).json({ ok: false, error: "LastName is required" });
+  }
+  if (!email) {
+    return res.status(400).json({ ok: false, error: "Email is required" });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ ok: false, error: "Invalid email format" });
+  }
+  if (Gender != null && !ALLOWED_GENDERS.includes(String(Gender))) {
+    return res.status(400).json({ ok: false, error: `Gender must be one of: ${ALLOWED_GENDERS.join(", ")}` });
+  }
+  if (StudentStatus != null && !ALLOWED_STATUSES.includes(String(StudentStatus))) {
+    return res.status(400).json({ ok: false, error: `StudentStatus must be one of: ${ALLOWED_STATUSES.join(", ")}` });
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO "Students" ("FirstName","LastName","Phone","DateOfBirth","Gender","Email","StudentStatus","EnrollmentDate")
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+       RETURNING *`,
+      [
+        firstName,
+        lastName,
+        safeStr(Phone, 20),
+        DateOfBirth ?? null,
+        Gender ?? null,
+        email,
+        StudentStatus ?? null,
+        EnrollmentDate ?? null,
+      ]
+    );
+    res.status(201).json({ ok: true, student: result.rows[0] });
+  } catch (err) {
+    console.error("Error creating student:", err);
+    res.status(500).json({ ok: false, error: "Failed to create student" });
+  }
+});
+
+// PUT /api/students
+router.put("/", async (req, res) => {
+  const {
+    StudentID,
+    FirstName,
+    LastName,
+    Phone,
+    DateOfBirth,
+    Gender,
+    Email,
+    StudentStatus,
+    EnrollmentDate,
+  } = req.body;
+
+  if (!isValidUUID(StudentID)) {
+    return res.status(400).json({ ok: false, error: "Valid StudentID (UUID) is required" });
+  }
+
+  const firstName = safeStr(FirstName, 100);
+  const lastName  = safeStr(LastName, 100);
+  const email     = safeStr(Email, 255);
+
+  if (!firstName) {
+    return res.status(400).json({ ok: false, error: "FirstName is required" });
+  }
+  if (!lastName) {
+    return res.status(400).json({ ok: false, error: "LastName is required" });
+  }
+  if (!email) {
+    return res.status(400).json({ ok: false, error: "Email is required" });
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return res.status(400).json({ ok: false, error: "Invalid email format" });
+  }
+  if (Gender != null && !ALLOWED_GENDERS.includes(String(Gender))) {
+    return res.status(400).json({ ok: false, error: `Gender must be one of: ${ALLOWED_GENDERS.join(", ")}` });
+  }
+  if (StudentStatus != null && !ALLOWED_STATUSES.includes(String(StudentStatus))) {
+    return res.status(400).json({ ok: false, error: `StudentStatus must be one of: ${ALLOWED_STATUSES.join(", ")}` });
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE "Students"
+       SET "FirstName"=$1,"LastName"=$2,"Phone"=$3,"DateOfBirth"=$4,"Gender"=$5,"Email"=$6,"StudentStatus"=$7,"EnrollmentDate"=$8
+       WHERE "StudentID"=$9
+       RETURNING *`,
+      [
+        firstName,
+        lastName,
+        safeStr(Phone, 20),
+        DateOfBirth ?? null,
+        Gender ?? null,
+        email,
+        StudentStatus ?? null,
+        EnrollmentDate ?? null,
+        StudentID,
+      ]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ ok: false, error: "Student not found" });
     }
-  });
-    router.post("/", async (req, res) => {
-      const { FirstName, LastName, Phone , DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate } = req.body;
-      try {
-        const result = await pool.query(
-          `INSERT INTO "Students" ("FirstName", "LastName", "Phone", "DateOfBirth", "Gender", "Email", "StudentStatus", "EnrollmentDate")
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           RETURNING *`,
-          [FirstName, LastName, Phone, DateOfBirth, Gender, Email, StudentStatus, EnrollmentDate]
-        );
-        res.json({ ok: true, student: result.rows[0] });
-      } catch (err) {
-        console.error("Error creating student:", err);
-        res.status(500).json({ ok: false, error: "Failed to create student" });
-      }
+
+    res.json({ ok: true, student: result.rows[0] });
+  } catch (err) {
+    console.error("Error updating student:", err);
+    res.status(500).json({ ok: false, error: "Failed to update student" });
+  }
 });
 
 // DELETE /api/students/:id
 router.delete("/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!isValidUUID(id)) {
+    return res.status(400).json({ ok: false, error: "Invalid student ID" });
+  }
+
   try {
-    const id = Number(req.params.id);
-
-    if (!Number.isInteger(id) || id <= 0) {
-      return res.status(400).json({ ok: false, error: "Invalid student ID" });
-    }
-
     const result = await pool.query(
-      `DELETE FROM "Students"
-       WHERE "StudentID" = $1
-       RETURNING "StudentID"`,
+      `DELETE FROM "Students" WHERE "StudentID"=$1 RETURNING "StudentID"`,
       [id]
     );
 
@@ -159,7 +246,6 @@ router.delete("/:id", async (req, res) => {
         error: "Cannot delete student because it is referenced by other records",
       });
     }
-
     console.error("Error deleting student:", err);
     res.status(500).json({ ok: false, error: "Failed to delete student" });
   }

@@ -1,16 +1,18 @@
-//Creating a connection pool for PostgreSQL database using pg library
-import {Pool} from 'pg';
-import dotenv from 'dotenv';
-
-// dotenv.config();
+import { Pool } from "pg";
+import dotenv from "dotenv";
 
 dotenv.config({ override: true });
-console.log("DATABASE_URL REAL:", process.env.DATABASE_URL);
 
-if (!process.env.DATABASE_URL){
-    throw new Error("DATABASE_URL cannot be found in environment variables. Please check your environment configuration.");
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL is not set. Check your .env file."
+  );
 }
 
 export const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-})
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: true } : false,
+  max: 10,
+  idleTimeoutMillis: 30_000,
+  connectionTimeoutMillis: 5_000,
+});

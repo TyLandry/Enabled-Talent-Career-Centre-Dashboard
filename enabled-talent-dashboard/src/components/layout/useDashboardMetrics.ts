@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5050";
+
 type ApiDashboard = {
   activeStudents: number;
   openOpportunities: number;
@@ -93,13 +95,13 @@ export function useDashboardMetrics() {
 
   useEffect(() => {
     Promise.all([
-      safeJson<ApiDashboard>("http://localhost:5050/api/dashboard"),
-      safeJson<ApiStudentDemographics>("http://localhost:5050/api/students/demographics"),
-      safeJson<ApiSkillGapResponse>("http://localhost:5050/api/skills/gap?limit=10"),
-      safeJson<ApiPlacementPerformance>("http://localhost:5050/api/placements/performance"),
-      safeJson<ApiMatchedSummary>("http://localhost:5050/api/applications/matched-summary"),
-      safeJson<ApiRecentJobs>("http://localhost:5050/api/jobs/recent?limit=3"),
-      safeJson<ApiRecentPlacements>("http://localhost:5050/api/placements/recent?limit=5"),
+      safeJson<ApiDashboard>(`${API_URL}/api/dashboard`),
+      safeJson<ApiStudentDemographics>(`${API_URL}/api/students/demographics`),
+      safeJson<ApiSkillGapResponse>(`${API_URL}/api/skills/gap?limit=10`),
+      safeJson<ApiPlacementPerformance>(`${API_URL}/api/placements/performance`),
+      safeJson<ApiMatchedSummary>(`${API_URL}/api/applications/matched-summary`),
+      safeJson<ApiRecentJobs>(`${API_URL}/api/jobs/recent?limit=3`),
+      safeJson<ApiRecentPlacements>(`${API_URL}/api/placements/recent?limit=5`),
     ])
       .then(([d, dem, gap, performance, matchedData, jobs, placements]) => {
         if (d) setDashboard(d);
